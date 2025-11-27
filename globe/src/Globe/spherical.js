@@ -1,11 +1,19 @@
-// Вспомогательная функция для перевода широты/долготы в 3D-координаты на сфере
-export function latLngToCartesian(latDeg, lngDeg, radius) {
-  const lat = (latDeg * Math.PI) / 180;
-  const lng = (lngDeg * Math.PI) / 180;
+// spherical.js
 
-  const x = radius * Math.cos(lat) * Math.sin(lng);
-  const y = radius * Math.sin(lat);
-  const z = radius * Math.cos(lat) * Math.cos(lng);
+// Перевод географических координат (широта/долгота в градусах)
+// в 3D-координаты на сфере Three.js с equirectangular-текстурой.
+export function latLngToCartesian(latDeg, lonDeg, radius) {
+  // latDeg  — широта:  +90 (северный полюс) … 0 … -90 (южный)
+  // lonDeg  — долгота: -180 … 0 … +180
+
+  // Переводим в радианы через сферические углы
+  const phi = (90 - latDeg) * (Math.PI / 180);   // угол от "северного полюса"
+  const theta = (lonDeg + 180) * (Math.PI / 180); // смещение по долготе
+
+  // Формула, согласованная с тем, как Three.js мапит текстуру на SphereGeometry
+  const x = -radius * Math.sin(phi) * Math.cos(theta);
+  const z =  radius * Math.sin(phi) * Math.sin(theta);
+  const y =  radius * Math.cos(phi);
 
   return [x, y, z];
 }

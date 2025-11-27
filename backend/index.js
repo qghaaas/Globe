@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -6,32 +5,24 @@ const { Pool } = require('pg');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// ====== MIDDLEWARE ======
 app.use(cors());
 app.use(express.json());
 
-// ====== ПОДКЛЮЧЕНИЕ К PostgreSQL ======
 const pool = new Pool({
     host: 'localhost',
     user: 'postgres',
     database: 'postgres',
     password: '1234',
     port: 5432,
-    options: '-c search_path=oriontour' // схема oriontour
+    options: '-c search_path=oriontour' 
 });
 
-// Тестовый маршрут
 app.get('/', (req, res) => {
     res.send('OrionTour Globe API is running');
 });
 
-// ====== API ДЛЯ ГЛОБУСА ======
 
-/**
- * GET /api/globe/markers
- * Возвращает список стран с координатами, флагами и количеством туров.
- * БЕЗ использования представления globe_markers — сразу запросом по country + tour.
- */
+
 app.get('/api/globe/markers', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -68,10 +59,6 @@ app.get('/api/globe/markers', async (req, res) => {
     }
 });
 
-/**
- * GET /api/globe/country/:id/tours
- * Туры для выбранной страны.
- */
 app.get('/api/globe/country/:id/tours', async (req, res) => {
     const { id } = req.params;
 
@@ -100,7 +87,6 @@ app.get('/api/globe/country/:id/tours', async (req, res) => {
     }
 });
 
-// ====== ЗАПУСК СЕРВЕРА ======
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

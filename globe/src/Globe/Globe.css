@@ -1,51 +1,196 @@
+.globe-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
 
-/* Canvas глобуса:
-   - фиксируем высоту
-   - чёрный фон под звёзды
-   - скруглённые углы и тень */
 .globe-canvas {
   width: 100%;
-  height: 80vh !important;
+  height: 100%;
   background: #000;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
 }
 
-/* Подпись к маркеру на глобусе:
-   - чёрная полупрозрачная "табличка"
-   - скруглённая форма "капсулы"
-   - блёр и тень
-   - pointer-events: none — чтобы не мешать клику по самому маркеру */
-.marker-label {
+.globe-search {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 2px 4px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(4px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
-  max-width: 160px;
-  pointer-events: none;
+  gap: 8px;
 }
 
-/* Круглый флаг в подписи к маркеру (иконка страны) */
+.globe-search-input {
+  min-width: 220px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  outline: none;
+  font-size: 14px;
+  backdrop-filter: blur(6px);
+}
+
+.globe-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.globe-search-btn {
+  border-radius: 999px;
+  padding: 8px 14px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #ffb703, #fb8500);
+  color: #111;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.globe-search-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+}
+
+.marker-pill {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+  max-width: 26px; 
+  padding: 1px;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    max-width 0.35s ease,
+    padding-right 0.35s ease,
+    background 0.25s ease;
+}
+
+.marker-pill:hover,
+.marker-pill--active {
+  max-width: 180px; 
+  padding-right: 12px;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.marker-flag-wrapper {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.marker-pill:hover .marker-flag-wrapper,
+.marker-pill--active .marker-flag-wrapper {
+  transform: scale(1.05);
+}
+
 .marker-flag {
   width: 16px;
   height: 16px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
 }
 
-/* Текст внутри подписи маркера (название страны + количество туров) */
-.marker-text {
+.marker-info {
+  display: flex;
+  flex-direction: column;
+  margin-left: 8px;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.25s ease 0.08s,
+    transform 0.25s ease 0.08s;
+}
+
+.marker-pill:hover .marker-info,
+.marker-pill--active .marker-info {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.marker-country {
   color: #ffffff;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.marker-tours {
+  color: rgba(255, 255, 255, 0.8);
   font-size: 10px;
   white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
+.globe-legend {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 12px;
+  align-items: center;
+}
+
+.globe-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.globe-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.globe-legend-dot--low {
+  background: #27ae60; 
+}
+
+.globe-legend-dot--medium {
+  background: #f1c40f; 
+}
+
+.globe-legend-dot--high {
+  background: #e74c3c; 
+}
+
+.globe-canvas,
+.marker-pill,
+.marker-flag,
+.marker-info,
+.marker-country,
+.marker-tours {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.globe-canvas {
+  -webkit-touch-callout: none;
+}
