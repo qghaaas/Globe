@@ -14,9 +14,9 @@ function getPopularityLevel(marker) {
 
   const score = Number(marker.popularity_score) || 0;
 
-  if (score < 60) return 'low';   
-  if (score < 80) return 'medium';  
-  return 'high';                   
+  if (score < 60) return 'low';
+  if (score < 80) return 'medium';
+  return 'high';
 }
 
 function getPopularityColor(level) {
@@ -24,9 +24,9 @@ function getPopularityColor(level) {
     case 'low':
       return '#27ae60';
     case 'medium':
-      return '#f1c40f'; 
+      return '#f1c40f';
     case 'high':
-      return '#e74c3c'; 
+      return '#e74c3c';
     default:
       return 'rgba(255, 255, 255, 0.6)';
   }
@@ -52,14 +52,19 @@ function CountryMarker({
   onHoverEnd,
 }) {
   const position = useMemo(
-    () => latLngToCartesian(marker.lat, marker.lng, radius + 0.01),
+    () => latLngToCartesian(marker.lat, marker.lng, radius + 0.1),
     [marker.lat, marker.lng, radius]
   );
 
   const popularityLevel = getPopularityLevel(marker);
   const borderColor =
-    marker.popularity_color || 
+    marker.popularity_color ||
     getPopularityColor(popularityLevel);
+
+  // const dotsCount =
+  //   popularityLevel === "low" ? 1 :
+  //     popularityLevel === "medium" ? 2 :
+  //       3;
 
   return (
     <group position={position}>
@@ -78,10 +83,7 @@ function CountryMarker({
             onClick?.(marker);
           }}
         >
-          <div
-            className="marker-flag-wrapper"
-            style={{ borderColor }}
-          >
+          <div className="marker-flag-wrapper" style={{ borderColor }}>
             {marker.flag_url && (
               <img
                 src={marker.flag_url}
@@ -90,6 +92,16 @@ function CountryMarker({
               />
             )}
           </div>
+
+          {/* <div className="marker-popularity-dots">
+            {Array.from({ length: dotsCount }).map((_, i) => (
+              <span
+                key={i}
+                className="popularity-dot"
+                style={{ backgroundColor: borderColor }}
+              />
+            ))}
+          </div> */}
 
           <div className="marker-info">
             <span className="marker-country">{marker.name_ru}</span>
@@ -114,9 +126,9 @@ function GlobeScene({
 }) {
   const controlsRef = useRef();
   const { camera } = useThree();
-  const flyRef = useRef(null);      
-  const initialDoneRef = useRef(false); 
-  const initialProgressRef = useRef(0);  
+  const flyRef = useRef(null);
+  const initialDoneRef = useRef(false);
+  const initialProgressRef = useRef(0);
 
   useEffect(() => {
     if (controlsRef.current) {
@@ -132,7 +144,7 @@ function GlobeScene({
 
     const posArr = latLngToCartesian(marker.lat, marker.lng, radius);
     const markerDir = new THREE.Vector3(posArr[0], posArr[1], posArr[2]).normalize();
-    const distance = radius + 2.5; 
+    const distance = radius + 2.5;
     const endPos = markerDir.clone().multiplyScalar(distance);
 
     if (controlsRef.current) {
@@ -153,8 +165,8 @@ function GlobeScene({
       initialProgressRef.current += delta * speed;
       const t = Math.min(initialProgressRef.current, 1);
 
-      const startZ = 12; 
-      const endZ = 8;   
+      const startZ = 12;
+      const endZ = 8;
       const z = startZ + (endZ - startZ) * t;
 
       camera.position.set(0, 0, z);
@@ -214,8 +226,8 @@ function GlobeScene({
         enablePan={false}
         enableZoom={true}
         enableRotate={true}
-        minDistance={7}   
-        maxDistance={15}  
+        minDistance={7}
+        maxDistance={15}
         onStart={() => {
           flyRef.current = null;
           initialDoneRef.current = true;
@@ -225,7 +237,7 @@ function GlobeScene({
             controlsRef.current.update();
           }
 
-          onInterruptSearch?.(); 
+          onInterruptSearch?.();
         }}
       />
     </>

@@ -65,7 +65,7 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(4px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
-  max-width: 26px; 
+  max-width: 24px; 
   padding: 1px;
   overflow: hidden;
   cursor: pointer;
@@ -97,8 +97,8 @@
   transition: border-color 0.25s ease, transform 0.25s ease;
 }
 
-.marker-pill:hover .marker-flag-wrapper,
-.marker-pill--active .marker-flag-wrapper {
+.marker-pill:hover
+.marker-pill--active  {
   transform: scale(1.05);
 }
 
@@ -193,4 +193,20 @@
 
 .globe-canvas {
   -webkit-touch-callout: none;
+}
+
+.marker-popularity-dots {
+  display: flex;
+  gap: 3px;
+  flex-direction: row;
+  margin-left: 4px;
+  align-items: center;
+}
+
+.popularity-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.9;
+  box-shadow: 0 0 4px currentColor;
 }
