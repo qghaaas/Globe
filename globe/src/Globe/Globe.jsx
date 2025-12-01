@@ -69,7 +69,7 @@ function CountryMarker({
   return (
     <group position={position}>
       <Html distanceFactor={10}>
-        <div
+        <div  style={{ borderColor }}
           className={`marker-pill ${isActive ? 'marker-pill--active' : ''}`}
           onMouseEnter={(e) => {
             e.stopPropagation();
@@ -83,7 +83,7 @@ function CountryMarker({
             onClick?.(marker);
           }}
         >
-          <div className="marker-flag-wrapper" style={{ borderColor }}>
+          <div className="marker-flag-wrapper">
             {marker.flag_url && (
               <img
                 src={marker.flag_url}
@@ -201,8 +201,8 @@ function GlobeScene({
 
   return (
     <>
-      <ambientLight intensity={1} />
-      <directionalLight position={[5, 5, 5]} intensity={1.2} />
+      <ambientLight intensity={5} />
+      <directionalLight position={[5, 5, 5]} intensity={1.5} />
       <Stars radius={100} depth={50} count={5000} factor={3} saturation={0} fade />
 
       <Earth radius={radius} />
@@ -264,20 +264,40 @@ function Globe({ onCountrySelect }) {
     })();
   }, []);
 
+  // Список подсказок по вводу
+  const suggestions = useMemo(() => {
+    const query = searchValue.trim().toLowerCase();
+    if (!query) return [];
+
+    return markers
+      .filter((m) => {
+        const ru = m.name_ru?.toLowerCase() || '';
+        const en = m.name_en?.toLowerCase() || '';
+        return ru.includes(query) || en.includes(query);
+      })
+      .slice(0, 7); // ограничим кол-во подсказок
+  }, [searchValue, markers]);
+
   const handleSearch = () => {
     if (!searchValue.trim()) return;
 
-    const query = searchValue.trim().toLowerCase();
+    // если есть подсказка — берем первую
+    const foundFromSuggestions = suggestions[0];
 
+    if (foundFromSuggestions) {
+      setSearchMarkerId(foundFromSuggestions.id);
+      return;
+    }
+
+    // fallback — старый поиск
+    const query = searchValue.trim().toLowerCase();
     const found = markers.find((m) => {
       const ru = m.name_ru?.toLowerCase() || '';
       const en = m.name_en?.toLowerCase() || '';
       return ru.includes(query) || en.includes(query);
     });
 
-    if (!found) {
-      return;
-    }
+    if (!found) return;
 
     setSearchMarkerId(found.id);
   };
@@ -286,6 +306,11 @@ function Globe({ onCountrySelect }) {
     if (e.key === 'Enter') {
       handleSearch();
     }
+  };
+
+  const handleSuggestionClick = (marker) => {
+    setSearchValue(marker.name_ru || marker.name_en || '');
+    setSearchMarkerId(marker.id);
   };
 
   return (
@@ -306,12 +331,42 @@ function Globe({ onCountrySelect }) {
         >
           Найти
         </button>
+
+        {/* Подсказки под строкой поиска */}
+        {suggestions.length > 0 && (
+          <ul className="globe-search-suggestions">
+            {suggestions.map((m) => (
+              <li
+                key={m.id}
+                className="globe-search-suggestion"
+                onMouseDown={() => handleSuggestionClick(m)}
+              >
+                {m.flag_url && (
+                  <img
+                    src={m.flag_url}
+                    alt={m.name_en || m.name_ru}
+                    className="globe-search-suggestion-flag"
+                  />
+                )}
+                <span className="globe-search-suggestion-name">
+                  {m.name_ru}
+                  {m.name_en && m.name_en !== m.name_ru && (
+                    <span className="globe-search-suggestion-name-en">
+                      {' '}
+                      ({m.name_en})
+                    </span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="globe-legend">
         <div className="globe-legend-item">
           <span className="globe-legend-dot globe-legend-dot--low" />
-          <span>Мало туров</span>
+          <span>Низкая популярность</span>
         </div>
         <div className="globe-legend-item">
           <span className="globe-legend-dot globe-legend-dot--medium" />
@@ -319,7 +374,7 @@ function Globe({ onCountrySelect }) {
         </div>
         <div className="globe-legend-item">
           <span className="globe-legend-dot globe-legend-dot--high" />
-          <span>Очень популярно</span>
+          <span>Высокая популярность</span>
         </div>
       </div>
 
@@ -340,5 +395,6 @@ function Globe({ onCountrySelect }) {
     </div>
   );
 }
+
 
 export default Globe;
