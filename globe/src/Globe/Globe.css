@@ -33,6 +33,7 @@
   outline: none;
   font-size: 14px;
   backdrop-filter: blur(6px);
+
 }
 
 .globe-search-input::placeholder {
@@ -65,7 +66,8 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(4px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
-  max-width: 24px;
+  max-width: 22px;
+  max-height: 22px;
   padding: 1px;
   overflow: hidden;
   cursor: pointer;
@@ -84,8 +86,8 @@
 }
 
 .marker-flag-wrapper {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -101,7 +103,7 @@
 }
 
 .marker-flag {
-  width: 16px;
+  width: 16px;  
   height: 16px;
   border-radius: 50%;
   object-fit: cover;
@@ -110,12 +112,13 @@
 .marker-info {
   display: flex;
   flex-direction: column;
-  margin-left: 8px;
+  margin-left: 4px;
   opacity: 0;
   transform: translateX(-6px);
   transition:
     opacity 0.25s ease 0.08s,
     transform 0.25s ease 0.08s;
+    line-height: 10px;
 }
 
 .marker-pill:hover .marker-info,
@@ -252,8 +255,28 @@
   color: #e5e7eb;
 }
 
-
 .globe-search-suggestion-name-en {
   font-size: 12px;
   color: #9ca3af;
+}
+
+.globe-search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.globe-search-icon {
+  position: absolute;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.globe-search-icon--clear {
+  cursor: pointer;
+  pointer-events: all;
 }

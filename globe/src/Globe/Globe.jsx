@@ -2,9 +2,10 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars, Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
-
 import { latLngToCartesian } from './spherical';
 import earth from './img/earth.jpg';
+import search from './img/search.svg';
+import close from './img/close.svg';
 import './Globe.css';
 
 const API_URL = 'http://localhost:5000/api/globe';
@@ -51,33 +52,43 @@ function CountryMarker({
   onHover,
   onHoverEnd,
 }) {
+  const { camera } = useThree();        
+  const [isVisible, setIsVisible] = useState(true);
+  const visibleRef = useRef(true);
+
   const position = useMemo(
-    () => latLngToCartesian(marker.lat, marker.lng, radius + 0.1),
+    () => latLngToCartesian(marker.lat, marker.lng, radius + 0),
     [marker.lat, marker.lng, radius]
   );
 
+  useFrame(() => {
+    const markerDir = new THREE.Vector3(...position).normalize();
+    const camDir = camera.position.clone().normalize();
+    const visible = markerDir.dot(camDir) > 0;
+
+    if (visible !== visibleRef.current) {
+      visibleRef.current = visible;
+      setIsVisible(visible);
+    }
+  });
+
+  if (!isVisible) return null; 
+
   const popularityLevel = getPopularityLevel(marker);
   const borderColor =
-    marker.popularity_color ||
-    getPopularityColor(popularityLevel);
-
-  // const dotsCount =
-  //   popularityLevel === "low" ? 1 :
-  //     popularityLevel === "medium" ? 2 :
-  //       3;
+    marker.popularity_color || getPopularityColor(popularityLevel);
 
   return (
     <group position={position}>
       <Html distanceFactor={10}>
-        <div  style={{ borderColor }}
+        <div
+          style={{ borderColor }}
           className={`marker-pill ${isActive ? 'marker-pill--active' : ''}`}
           onMouseEnter={(e) => {
             e.stopPropagation();
             onHover?.(marker);
           }}
-          onMouseLeave={() => {
-            onHoverEnd?.(marker);
-          }}
+          onMouseLeave={() => onHoverEnd?.(marker)}
           onClick={(e) => {
             e.stopPropagation();
             onClick?.(marker);
@@ -93,16 +104,6 @@ function CountryMarker({
             )}
           </div>
 
-          {/* <div className="marker-popularity-dots">
-            {Array.from({ length: dotsCount }).map((_, i) => (
-              <span
-                key={i}
-                className="popularity-dot"
-                style={{ backgroundColor: borderColor }}
-              />
-            ))}
-          </div> */}
-
           <div className="marker-info">
             <span className="marker-country">{marker.name_ru}</span>
             <span className="marker-tours">
@@ -114,6 +115,7 @@ function CountryMarker({
     </group>
   );
 }
+
 
 function GlobeScene({
   markers,
@@ -221,6 +223,7 @@ function GlobeScene({
         />
       ))}
 
+
       <OrbitControls
         ref={controlsRef}
         enablePan={false}
@@ -264,7 +267,6 @@ function Globe({ onCountrySelect }) {
     })();
   }, []);
 
-  // Список подсказок по вводу
   const suggestions = useMemo(() => {
     const query = searchValue.trim().toLowerCase();
     if (!query) return [];
@@ -275,13 +277,12 @@ function Globe({ onCountrySelect }) {
         const en = m.name_en?.toLowerCase() || '';
         return ru.includes(query) || en.includes(query);
       })
-      .slice(0, 7); // ограничим кол-во подсказок
+      .slice(0, 7);
   }, [searchValue, markers]);
 
   const handleSearch = () => {
     if (!searchValue.trim()) return;
 
-    // если есть подсказка — берем первую
     const foundFromSuggestions = suggestions[0];
 
     if (foundFromSuggestions) {
@@ -289,7 +290,6 @@ function Globe({ onCountrySelect }) {
       return;
     }
 
-    // fallback — старый поиск
     const query = searchValue.trim().toLowerCase();
     const found = markers.find((m) => {
       const ru = m.name_ru?.toLowerCase() || '';
@@ -316,14 +316,35 @@ function Globe({ onCountrySelect }) {
   return (
     <div className="globe-wrapper">
       <div className="globe-search">
-        <input
-          className="globe-search-input"
-          type="text"
-          placeholder="Поиск страны..."
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+        <div className="globe-search-input-wrapper">
+          <input
+            className="globe-search-input"
+            type="text"
+            placeholder="Поиск страны..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+
+          {searchValue.length === 0 ? (
+            <img
+              src={search}
+              alt="search"
+              className="globe-search-icon"
+            />
+          ) : (
+            <img
+              src={close}
+              alt="clear"
+              className="globe-search-icon globe-search-icon--clear"
+              onClick={() => {
+                setSearchValue('');
+                setSearchMarkerId(null);
+              }}
+            />
+          )}
+        </div>
+
         <button
           className="globe-search-btn"
           type="button"
@@ -331,6 +352,7 @@ function Globe({ onCountrySelect }) {
         >
           Найти
         </button>
+
 
         {/* Подсказки под строкой поиска */}
         {suggestions.length > 0 && (
