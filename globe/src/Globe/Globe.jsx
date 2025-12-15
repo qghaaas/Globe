@@ -3,10 +3,14 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars, Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { latLngToCartesian } from './spherical';
-import earth from './img/earth.jpg';
+import earthNight from './img/earthNight.jpg';
+import earthDay from './img/earthDay.jpg';
 import search from './img/search.svg';
 import close from './img/close.svg';
 import './Globe.css';
+import SunIcon from './img/SunIcon.svg';
+import MoonIcon from './img/MoonIcon.svg';
+import earthBump from './img/earthBump.jpg';
 
 const API_URL = 'http://localhost:5000/api/globe';
 
@@ -33,13 +37,28 @@ function getPopularityColor(level) {
   }
 }
 
-function Earth({ radius }) {
-  const earthTexture = useTexture(earth);
+function Earth({ radius, theme }) {
+  const textures = useTexture(
+    theme === 'light'
+      ? {
+        map: earthDay,
+        bumpMap: earthBump,
+      }
+      : {
+        map: earthNight,
+      }
+  );
 
   return (
     <mesh>
       <sphereGeometry args={[radius, 64, 64]} />
-      <meshStandardMaterial map={earthTexture} roughness={0.9} metalness={0.0} />
+      <meshStandardMaterial
+        map={textures.map}
+        bumpMap={theme === 'light' ? textures.bumpMap : null}
+        bumpScale={theme === 'light' ? 0.25 : 0}
+        roughness={0.9}
+        metalness={0.0}
+      />
     </mesh>
   );
 }
@@ -52,7 +71,7 @@ function CountryMarker({
   onHover,
   onHoverEnd,
 }) {
-  const { camera } = useThree();        
+  const { camera } = useThree();
   const [isVisible, setIsVisible] = useState(true);
   const visibleRef = useRef(true);
 
@@ -72,7 +91,7 @@ function CountryMarker({
     }
   });
 
-  if (!isVisible) return null; 
+  if (!isVisible) return null;
 
   const popularityLevel = getPopularityLevel(marker);
   const borderColor =
@@ -125,13 +144,38 @@ function GlobeScene({
   searchMarkerId,
   setHoveredMarkerId,
   onInterruptSearch,
+  theme,
 }) {
   const controlsRef = useRef();
   const { camera } = useThree();
   const flyRef = useRef(null);
   const initialDoneRef = useRef(false);
   const initialProgressRef = useRef(0);
-
+  const LIGHT_PRESETS = {
+    light: {
+      ambient: {
+        intensity: 0.5,
+        color: "#ffffff",
+      },
+      directional: {
+        intensity: 1.1,
+        color: "#ffffff",
+        position: [5, 5, 5],
+      },
+    },
+    dark: {
+      ambient: {
+        intensity: 10.2,
+        color: "#888888",
+      },
+      directional: {
+        intensity: 10.2,
+        color: "#888888",
+        position: [5, 5, 5],
+      },
+    },
+  };
+  const light = LIGHT_PRESETS[theme];
   useEffect(() => {
     if (controlsRef.current) {
       controlsRef.current.target.set(0, 0, 0);
@@ -203,11 +247,18 @@ function GlobeScene({
 
   return (
     <>
-      <ambientLight intensity={5} />
-      <directionalLight position={[5, 5, 5]} intensity={1.5} />
+      <ambientLight
+        intensity={light.ambient.intensity}
+        color={light.ambient.color}
+      />
+      <directionalLight
+        position={light.directional.position}
+        intensity={light.directional.intensity}
+        color={light.directional.color}
+      />
       <Stars radius={100} depth={50} count={5000} factor={3} saturation={0} fade />
 
-      <Earth radius={radius} />
+      <Earth radius={radius} theme={theme} />
 
       {markers.map((m) => (
         <CountryMarker
@@ -252,8 +303,14 @@ function Globe({ onCountrySelect }) {
   const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
   const [searchMarkerId, setSearchMarkerId] = useState(null);
   const [searchValue, setSearchValue] = useState('');
+  const [theme, setTheme] = useState('dark');
 
   const radius = 4;
+
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   useEffect(() => {
     (async () => {
@@ -314,7 +371,17 @@ function Globe({ onCountrySelect }) {
   };
 
   return (
-    <div className="globe-wrapper">
+    <div className={`globe-wrapper ${theme}`}>
+
+      <div className="globe-theme-toggle">
+        <img
+          src={theme === 'dark' ? SunIcon : MoonIcon}
+          alt="theme toggle"
+          onClick={toggleTheme}
+          className="theme-toggle-icon"
+        />
+      </div>
+
       <div className="globe-search">
         <div className="globe-search-input-wrapper">
           <input
@@ -412,6 +479,7 @@ function Globe({ onCountrySelect }) {
           searchMarkerId={searchMarkerId}
           setHoveredMarkerId={setHoveredMarkerId}
           onInterruptSearch={() => setSearchMarkerId(null)}
+          theme={theme}
         />
       </Canvas>
     </div>

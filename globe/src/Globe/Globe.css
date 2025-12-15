@@ -280,3 +280,23 @@
   cursor: pointer;
   pointer-events: all;
 }
+
+.globe-theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+}
+
+.theme-toggle-icon {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+
+.theme-toggle-icon:hover {
+  opacity: 1;
+}
+
