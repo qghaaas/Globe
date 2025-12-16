@@ -94,8 +94,10 @@ function CountryMarker({
   if (!isVisible) return null;
 
   const popularityLevel = getPopularityLevel(marker);
-  const borderColor =
-    marker.popularity_color || getPopularityColor(popularityLevel);
+  const borderColor = marker.popularity_color || getPopularityColor(popularityLevel);
+
+  const offers = Number(marker.offers_count ?? 0);
+  const hotels = Number(marker.hotels_count ?? 0);
 
   return (
     <group position={position}>
@@ -125,8 +127,10 @@ function CountryMarker({
 
           <div className="marker-info">
             <span className="marker-country">{marker.name_ru}</span>
+
+            {/* вместо tours_count */}
             <span className="marker-tours">
-              {marker.tours_count} туров
+              {offers} предложений · {hotels} отелей
             </span>
           </div>
         </div>
