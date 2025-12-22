@@ -25,19 +25,28 @@ app.get('/api/globe/markers', async (req, res) => {
   try {
     const { rows } = await pool.query(`
       SELECT
-        id,
-        name_ru,
-        name_en,
-        iso_code,
-        lat,
-        lng,
-        flag_url,
-        is_popular,
-        popularity_score,
-        hotels_count,
-        offers_count
-      FROM globe_markers
-      ORDER BY popularity_score DESC, name_en ASC;
+        gm.id,
+        gm.name_ru,
+        gm.name_en,
+        gm.iso_code,
+        gm.lat,
+        gm.lng,
+        gm.flag_url,
+        gm.is_popular,
+        gm.popularity_score,
+        gm.hotels_count,
+        gm.offers_count,
+
+        COALESCE(tc.tours_count, 0) AS tours_count
+
+      FROM globe_markers gm
+      LEFT JOIN (
+        SELECT country_id, COUNT(*)::int AS tours_count
+        FROM tour
+        GROUP BY country_id
+      ) tc ON tc.country_id = gm.id
+
+      ORDER BY gm.popularity_score DESC, gm.name_en ASC;
     `);
 
     res.json(rows);
@@ -46,6 +55,7 @@ app.get('/api/globe/markers', async (req, res) => {
     res.status(500).json({ message: 'Ошибка при получении маркеров' });
   }
 });
+
 
 app.get('/api/globe/country/:id/tours', async (req, res) => {
   const countryId = Number(req.params.id);
